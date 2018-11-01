@@ -1,0 +1,45 @@
+import requests
+from bs4 import BeautifulSoup
+
+
+SEARCHRUL = 'https://www.google.com/search?&safe=off&q={}&tbm=isch&tbs=itp:photo,isz:l'
+
+
+def get_html_text(url):
+        try:
+            r = requests.get(url, timeout=3)
+            r.raise_for_status()
+            r.encoding = r.apparent_encoding
+            return r.text
+        except:
+            return 'something wrong'
+
+
+def get_content(url):
+
+    content_list = []
+
+    html = get_html_text(url)
+    soup = BeautifulSoup(html, 'lxml')
+
+    articles = soup.find_all('div', class_='article block untagged mb15')
+
+    for article in articles:
+        body = article.find('span').text
+        author = article.find('img')['alt']
+        try:
+            comment = article.find(
+                'div', class_='main-text').contents[0].replace('\n', '')
+        except:
+            comment = 'no comment'
+
+        content = 'author：{}\n{}\n\ncomment{}'.format(author, body, comment)
+        content_list.append(content)
+
+    return content_list
+
+
+url = 'https://www.qiushibaike.com/8hr'
+
+a = get_content(url)
+print(a[1])
